@@ -19,4 +19,7 @@ streamlit==1.39.0
 # Utilities
 pickle-mixin==1.0.2
 
-is it okay r.txt
+setuptools>=68.0.0
+wheel
+
+
