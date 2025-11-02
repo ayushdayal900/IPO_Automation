@@ -7,7 +7,7 @@ scikit-learn==1.5.2
 imbalanced-learn==0.12.4
 xgboost==2.1.1
 lightgbm==4.5.0
-catboost==1.2.5
+
 
 # Visualization
 matplotlib==3.9.2
