@@ -33,7 +33,7 @@ st.set_page_config(
 def load_and_preprocess_data():
     """Load and preprocess the IPO dataset"""
     try:
-        df = pd.read_csv('../data.csv')
+        df = pd.read_csv('app/data.csv')
         st.success(f"✅ Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
         
         # Replace NA values and handle missing data
