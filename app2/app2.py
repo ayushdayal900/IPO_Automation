@@ -220,8 +220,8 @@ def evaluate_individual_models(base_models, X_train, y_train, X_test, y_test, la
             # Calculate metrics
             accuracy = accuracy_score(y_test_original, y_pred_original)
             f1 = f1_score(y_test_original, y_pred_original, average='weighted')
-            precision = precision_score(y_test_original, y_pred_original, average='weighted')
-            recall = recall_score(y_test_original, y_pred_original, average='weighted')
+            precision = precision_score(y_test_original, y_pred_original, average='weighted', zero_division=0)
+            recall = recall_score(y_test_original, y_pred_original, average='weighted', zero_division=0)
             
             # Store performance
             model_performance[name] = {
@@ -291,6 +291,8 @@ def train_advanced_model(X, y_encoded, label_encoder):
         y_test_original = label_encoder.inverse_transform(y_test)
         stacking_accuracy = accuracy_score(y_test_original, stacking_pred_original)
         stacking_f1 = f1_score(y_test_original, stacking_pred_original, average='weighted')
+        stacking_precision = precision_score(y_test_original, stacking_pred_original, average='weighted', zero_division=0)
+        stacking_recall = recall_score(y_test_original, stacking_pred_original, average='weighted', zero_division=0)
     
     # Train voting ensemble
     with st.spinner("🏋️ Training voting ensemble..."):
@@ -299,12 +301,16 @@ def train_advanced_model(X, y_encoded, label_encoder):
         voting_pred_original = label_encoder.inverse_transform(voting_pred)
         voting_accuracy = accuracy_score(y_test_original, voting_pred_original)
         voting_f1 = f1_score(y_test_original, voting_pred_original, average='weighted')
+        voting_precision = precision_score(y_test_original, voting_pred_original, average='weighted', zero_division=0)
+        voting_recall = recall_score(y_test_original, voting_pred_original, average='weighted', zero_division=0)
     
     # Store ensemble performances
     individual_performance['stacking'] = {
         'model': stacking_ensemble,
         'accuracy': stacking_accuracy,
         'f1_score': stacking_f1,
+        'precision': stacking_precision,
+        'recall': stacking_recall,
         'predictions': stacking_pred_original
     }
     
@@ -312,6 +318,8 @@ def train_advanced_model(X, y_encoded, label_encoder):
         'model': voting_ensemble,
         'accuracy': voting_accuracy,
         'f1_score': voting_f1,
+        'precision': voting_precision,
+        'recall': voting_recall,
         'predictions': voting_pred_original
     }
     
@@ -325,7 +333,25 @@ def train_advanced_model(X, y_encoded, label_encoder):
         ensemble_type = "Voting Ensemble"
         ensemble_score = voting_accuracy
     
-    st.success(f"✅ Model training completed! Best: {ensemble_type} (Accuracy: {ensemble_score:.3f})")
+    # Enhanced styling for the success message
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            margin: 20px 0;
+        ">
+            <h2 style="margin: 0; font-size: 24px;">🎉 Model Training Completed!</h2>
+            <p style="margin: 10px 0 0 0; font-size: 18px;">
+                Best Model: <strong>{ensemble_type}</strong> | Accuracy: <strong>{ensemble_score:.3f}</strong>
+            </p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
     return best_ensemble, scaler, selector, X_train, X_test, y_train, y_test, selected_features, individual_performance, label_encoder
 
@@ -488,8 +514,8 @@ def display_model_performance(individual_performance, y_test_original):
                 'Model': f"{model_name.title()} Ensemble",
                 'Accuracy': f"{metrics['accuracy']:.3f}",
                 'F1-Score': f"{metrics['f1_score']:.3f}",
-                'Precision': 'N/A',
-                'Recall': 'N/A'
+                'Precision': f"{metrics['precision']:.3f}",
+                'Recall': f"{metrics['recall']:.3f}"
             })
     
     # Display performance table
@@ -546,15 +572,9 @@ def display_model_performance(individual_performance, y_test_original):
     with col2:
         st.metric("F1-Score", f"{best_metrics['f1_score']:.3f}")
     with col3:
-        if 'precision' in best_metrics and best_metrics['precision'] != 'N/A':
-            st.metric("Precision", f"{best_metrics['precision']:.3f}")
-        else:
-            st.metric("Precision", "N/A")
+        st.metric("Precision", f"{best_metrics['precision']:.3f}")
     with col4:
-        if 'recall' in best_metrics and best_metrics['recall'] != 'N/A':
-            st.metric("Recall", f"{best_metrics['recall']:.3f}")
-        else:
-            st.metric("Recall", "N/A")
+        st.metric("Recall", f"{best_metrics['recall']:.3f}")
     
     # Confusion Matrix for best model
     st.subheader("📋 Confusion Matrix - Best Model")
