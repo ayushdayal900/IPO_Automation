@@ -1496,7 +1496,8 @@ def show_model_analysis():
     
     # Try to load performance data and test results
     try:
-        with open('D:\\Projects\\IPO_Automation\\app2\\model_performance.pkl', 'rb') as f:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(base_dir, 'model_performance.pkl'), 'rb') as f:
             individual_performance = pickle.load(f)
         
         # Try to load the original data for test set recreation
@@ -1870,7 +1871,8 @@ def display_feature_importance(model, feature_names):
 def load_and_preprocess_data():
     """Load and preprocess the IPO dataset"""
     try:
-        df = pd.read_csv('D:\\Projects\\IPO_Automation\\app2\\data.csv')
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        df = pd.read_csv(os.path.join(base_dir, 'data.csv'))
         st.success(f"✅ Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
         
         # Replace NA values and handle missing data
