@@ -1050,12 +1050,14 @@ def load_all_models():
     artifacts = {}
     
     try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        
         # Load all model artifacts
-        artifacts['model'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\advanced_ensemble_model.pkl")
-        artifacts['scaler'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\advanced_scaler.pkl")
-        artifacts['selector'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\advanced_selector.pkl")
-        artifacts['selected_features'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\selected_features.pkl")
-        artifacts['label_encoder'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\label_encoder.pkl")
+        artifacts['model'] = load_artifact(os.path.join(base_dir, "advanced_ensemble_model.pkl"))
+        artifacts['scaler'] = load_artifact(os.path.join(base_dir, "advanced_scaler.pkl"))
+        artifacts['selector'] = load_artifact(os.path.join(base_dir, "advanced_selector.pkl"))
+        artifacts['selected_features'] = load_artifact(os.path.join(base_dir, "selected_features.pkl"))
+        artifacts['label_encoder'] = load_artifact(os.path.join(base_dir, "label_encoder.pkl"))
         
         st.success("✅ All model artifacts loaded successfully!")
         return artifacts
