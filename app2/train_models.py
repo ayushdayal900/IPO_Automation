@@ -17,6 +17,7 @@ It will generate the following files:
 import pandas as pd
 import numpy as np
 import pickle
+import os
 from sklearn.preprocessing import LabelEncoder, PowerTransformer
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.feature_selection import RFECV
@@ -33,7 +34,8 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 # LOAD DATA
 # ---------------------------------------------------------
 
-DATA_PATH = "data.csv"   # Update if needed
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "data.csv")   # Update if needed
 
 df = pd.read_csv(DATA_PATH)
 df = df.replace(['NA', '', 'NaN', 'null'], 0).fillna(0)
@@ -232,12 +234,12 @@ performance_dict = {
 # SAVE ARTIFACTS
 # ---------------------------------------------------------
 
-pickle.dump(stacking, open("advanced_ensemble_model.pkl", "wb"))
-pickle.dump(scaler, open("advanced_scaler.pkl", "wb"))
-pickle.dump(selector, open("advanced_selector.pkl", "wb"))
-pickle.dump(selected_features, open("selected_features.pkl", "wb"))
-pickle.dump(label_encoder, open("label_encoder.pkl", "wb"))
-pickle.dump(performance_dict, open("model_performance.pkl", "wb"))
+pickle.dump(stacking, open(os.path.join(BASE_DIR, "advanced_ensemble_model.pkl"), "wb"))
+pickle.dump(scaler, open(os.path.join(BASE_DIR, "advanced_scaler.pkl"), "wb"))
+pickle.dump(selector, open(os.path.join(BASE_DIR, "advanced_selector.pkl"), "wb"))
+pickle.dump(selected_features, open(os.path.join(BASE_DIR, "selected_features.pkl"), "wb"))
+pickle.dump(label_encoder, open(os.path.join(BASE_DIR, "label_encoder.pkl"), "wb"))
+pickle.dump(performance_dict, open(os.path.join(BASE_DIR, "model_performance.pkl"), "wb"))
 
 print("\nAll artifacts saved successfully!")
 print("You can now deploy your Streamlit prediction app on Render.")

@@ -16,6 +16,7 @@ from imblearn.ensemble import BalancedRandomForestClassifier
 import warnings
 warnings.filterwarnings('ignore')
 import pickle
+import os
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -51,12 +52,15 @@ def load_all_models():
     artifacts = {}
     
     try:
+        # Get the directory of the current script
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
         # Load all model artifacts
-        artifacts['model'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\advanced_ensemble_model.pkl")
-        artifacts['scaler'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\advanced_scaler.pkl")
-        artifacts['selector'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\advanced_selector.pkl")
-        artifacts['selected_features'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\selected_features.pkl")
-        artifacts['label_encoder'] = load_artifact("D:\\Projects\\IPO_Automation\\app2\\label_encoder.pkl")
+        artifacts['model'] = load_artifact(os.path.join(base_dir, "advanced_ensemble_model.pkl"))
+        artifacts['scaler'] = load_artifact(os.path.join(base_dir, "advanced_scaler.pkl"))
+        artifacts['selector'] = load_artifact(os.path.join(base_dir, "advanced_selector.pkl"))
+        artifacts['selected_features'] = load_artifact(os.path.join(base_dir, "selected_features.pkl"))
+        artifacts['label_encoder'] = load_artifact(os.path.join(base_dir, "label_encoder.pkl"))
         
         st.success("✅ All model artifacts loaded successfully!")
         return artifacts
@@ -303,23 +307,29 @@ def show_ipo_prediction():
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            pe_ratio = st.number_input("P/E Ratio", min_value=0.0, value=20.0, step=1.0)
-            market_cap = st.number_input("Market Capitalization (Rs. Cr.)", min_value=0.0, value=1500.0, step=100.0)
-            dividend_yield = st.number_input("Dividend Yield %", min_value=0.0, value=2.5, step=0.1)
+            pe_ratio = st.number_input("P/E Ratio", min_value=0.0, value=None, step=1.0, placeholder="Enter P/E Ratio")
+            market_cap = st.number_input("Market Capitalization (Rs. Cr.)", min_value=0.0, value=None, step=100.0, placeholder="Enter Market Cap")
+            dividend_yield = st.number_input("Dividend Yield %", min_value=0.0, value=None, step=0.1, placeholder="Enter Yield %")
         
         with col2:
-            net_profit = st.number_input("Net Profit last quarter (Rs. Cr.)", min_value=0.0, value=75.0, step=10.0)
-            profit_variation = st.number_input("Quarterly Profit Variation %", value=15.0, step=1.0)
-            quarterly_sales = st.number_input("Quarterly Sales (Rs. Cr.)", min_value=0.0, value=600.0, step=50.0)
+            net_profit = st.number_input("Net Profit last quarter (Rs. Cr.)", min_value=0.0, value=None, step=10.0, placeholder="Enter Net Profit")
+            profit_variation = st.number_input("Quarterly Profit Variation %", value=None, step=1.0, placeholder="Enter Profit Var %")
+            quarterly_sales = st.number_input("Quarterly Sales (Rs. Cr.)", min_value=0.0, value=None, step=50.0, placeholder="Enter Sales")
         
         with col3:
-            sales_variation = st.number_input("Quarterly Sales Variation %", value=12.0, step=1.0)
-            issue_price = st.number_input("Issue Price (Rs)", min_value=0.0, value=120.0, step=10.0)
-            roce = st.number_input("ROCE %", value=18.0, step=1.0)
+            sales_variation = st.number_input("Quarterly Sales Variation %", value=None, step=1.0, placeholder="Enter Sales Var %")
+            issue_price = st.number_input("Issue Price (Rs)", min_value=0.0, value=None, step=10.0, placeholder="Enter Price")
+            roce = st.number_input("ROCE %", value=None, step=1.0, placeholder="Enter ROCE %")
         
         submitted = st.form_submit_button("🎯 Predict IPO Success")
     
     if submitted:
+        # Check if any input is None
+        input_values = [pe_ratio, market_cap, dividend_yield, net_profit, profit_variation, quarterly_sales, sales_variation, issue_price, roce]
+        if any(v is None for v in input_values):
+            st.warning("Please fill in all the details in Step 2 to proceed.")
+            return
+
         input_features = {
             'P/E': pe_ratio,
             'Mar Capitalization Rs.Cr.': market_cap,
@@ -497,7 +507,8 @@ def show_model_analysis():
     
     # Try to load performance data and test results
     try:
-        with open('D:\\Projects\\IPO_Automation\\app2\\model_performance.pkl', 'rb') as f:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(base_dir, 'model_performance.pkl'), 'rb') as f:
             individual_performance = pickle.load(f)
         
         # Try to load the original data for test set recreation
@@ -871,7 +882,8 @@ def display_feature_importance(model, feature_names):
 def load_and_preprocess_data():
     """Load and preprocess the IPO dataset"""
     try:
-        df = pd.read_csv('D:\\Projects\\IPO_Automation\\app2\\data.csv')
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        df = pd.read_csv(os.path.join(base_dir, 'data.csv'))
         st.success(f"✅ Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
         
         # Replace NA values and handle missing data
@@ -922,43 +934,7 @@ def advanced_feature_engineering(df):
     X = apply_feature_engineering(X)
     
     return X, y_encoded, label_encoder, feature_columns
-    """Advanced feature engineering with domain knowledge"""
-    
-    # Define core feature columns
-    feature_columns = [
-        'P/E', 'Mar Capitalization Rs.Cr.', 'Dividend Yield %',
-        'Net Profit of last quarter Rs. Cr.', 'Quarterly Profit Variation %',
-        'Quarterly Sales Rs.Cr.', 'Quarterly Sales Variation %',
-        'Issue Price (Rs)', 'ROCE %'
-    ]
-    
-    # Extract features and target
-    X = df[feature_columns].copy()
-    y = df['Classification'].copy()
-    
-    # Convert features to numeric
-    for col in feature_columns:
-        X[col] = pd.to_numeric(X[col], errors='coerce')
-    X = X.fillna(0)
-    
-    # Handle infinite values
-    X = X.replace([np.inf, -np.inf], 0)
-    
-    # Convert target and filter valid classes
-    y = y.astype(str).str.strip()
-    valid_classes = ['S', 'F', 'N']
-    mask = y.isin(valid_classes)
-    X = X[mask].reset_index(drop=True)
-    y = y[mask].reset_index(drop=True)
-    
-    # Encode labels to numerical values
-    label_encoder = LabelEncoder()
-    y_encoded = label_encoder.fit_transform(y)
-    
-    # Apply feature engineering (same as in prediction)
-    X = apply_feature_engineering(X)
-    
-    return X, y_encoded, label_encoder, feature_columns
+
 
 if __name__ == "__main__":
     main()
