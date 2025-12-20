@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ipo-automation
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app/a.py --server.port $PORT --server.address 0.0.0.0
+    plan: free
+    branch: main
+    pythonVersion: 3.9
