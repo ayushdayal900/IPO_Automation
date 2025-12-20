@@ -1091,7 +1091,7 @@ def main():
     st.sidebar.title("Navigation")
     app_mode = st.sidebar.selectbox(
         "Choose Mode",
-        ["Model Training", "IPO Prediction", "Model Analysis", "Data Analysis"]
+        ["IPO Prediction", "Model Training", "Model Analysis", "Data Analysis"]
     )
     
     if app_mode == "Model Training":
