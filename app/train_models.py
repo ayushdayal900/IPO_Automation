@@ -35,7 +35,12 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 # ---------------------------------------------------------
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, "data.csv")   # Update if needed
+DATA_PATH = os.path.join(BASE_DIR, "..", "Datasets", "data.csv")   # Update if needed
+
+ARTIFACT_DIR = os.path.join(BASE_DIR, "models")
+os.makedirs(ARTIFACT_DIR, exist_ok=True)
+
+
 
 df = pd.read_csv(DATA_PATH)
 df = df.replace(['NA', '', 'NaN', 'null'], 0).fillna(0)
@@ -234,12 +239,12 @@ performance_dict = {
 # SAVE ARTIFACTS
 # ---------------------------------------------------------
 
-pickle.dump(stacking, open(os.path.join(BASE_DIR, "advanced_ensemble_model.pkl"), "wb"))
-pickle.dump(scaler, open(os.path.join(BASE_DIR, "advanced_scaler.pkl"), "wb"))
-pickle.dump(selector, open(os.path.join(BASE_DIR, "advanced_selector.pkl"), "wb"))
-pickle.dump(selected_features, open(os.path.join(BASE_DIR, "selected_features.pkl"), "wb"))
-pickle.dump(label_encoder, open(os.path.join(BASE_DIR, "label_encoder.pkl"), "wb"))
-pickle.dump(performance_dict, open(os.path.join(BASE_DIR, "model_performance.pkl"), "wb"))
+pickle.dump(stacking, open(os.path.join(ARTIFACT_DIR, "advanced_ensemble_model.pkl"), "wb"))
+pickle.dump(scaler, open(os.path.join(ARTIFACT_DIR, "advanced_scaler.pkl"), "wb"))
+pickle.dump(selector, open(os.path.join(ARTIFACT_DIR, "advanced_selector.pkl"), "wb"))
+pickle.dump(selected_features, open(os.path.join(ARTIFACT_DIR, "selected_features.pkl"), "wb"))
+pickle.dump(label_encoder, open(os.path.join(ARTIFACT_DIR, "label_encoder.pkl"), "wb"))
+pickle.dump(performance_dict, open(os.path.join(ARTIFACT_DIR, "model_performance.pkl"), "wb"))
 
 print("\nAll artifacts saved successfully!")
 print("You can now deploy your Streamlit prediction app on Render.")

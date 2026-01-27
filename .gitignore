@@ -35,3 +35,9 @@ catboost_info/
 
 # Ignore local config/secrets if any
 .env
+
+.venv/
+.streamlit/
+catboost_info/
+__pycache__/
+*.pyc

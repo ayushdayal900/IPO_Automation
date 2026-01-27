@@ -29,6 +29,15 @@ st.set_page_config(
     layout="wide"
 )
 
+
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATASET_PATH = os.path.join(BASE_DIR, "Datasets", "data.csv")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+
+
+
 @st.cache_data
 def load_and_preprocess_data():
     """Load and preprocess the IPO dataset"""
@@ -522,11 +531,9 @@ def display_correlation_heatmaps(df, X_engineered):
         'Classification'
     ]
 
-    # Keep only existing columns
     existing_cols = [col for col in original_features if col in df.columns]
     original_df = df[existing_cols].copy()
 
-    # ---- SAFE handling of Classification ----
     if 'Classification' in original_df.columns:
         original_df['Classification'] = (
             original_df['Classification']
@@ -535,13 +542,10 @@ def display_correlation_heatmaps(df, X_engineered):
             .replace({'nan': 'Unknown'})
         )
 
-        # Manual numeric mapping (DO NOT use LabelEncoder here)
         class_mapping = {'S': 2, 'N': 1, 'F': 0, 'Unknown': -1}
         original_df['Classification_encoded'] = original_df['Classification'].map(class_mapping)
-
         original_df = original_df.drop(columns=['Classification'])
 
-    # Convert everything to numeric
     for col in original_df.columns:
         original_df[col] = pd.to_numeric(original_df[col], errors='coerce')
 
@@ -591,7 +595,7 @@ def display_correlation_heatmaps(df, X_engineered):
         sns.heatmap(
             corr_eng,
             mask=mask,
-            annot=False,  # too many features → cleaner view
+            annot=False,
             cmap="RdBu",
             center=0,
             square=True,
@@ -629,355 +633,7 @@ def display_correlation_heatmaps(df, X_engineered):
         - Helps justify feature selection  
         """)
 
-    """Display correlation heatmaps for original and engineered features"""
-    
-    st.header("🔥 Correlation Analysis")
-    
-    # Original features correlation
-    st.subheader("📊 Original Features Correlation Heatmap")
-    
-    # Select only original numeric features from the dataframe (exclude Classification)
-    numeric_features = [
-        'P/E', 'Mar Capitalization Rs.Cr.', 'Dividend Yield %',
-        'Net Profit of last quarter Rs. Cr.', 'Quarterly Profit Variation %',
-        'Quarterly Sales Rs.Cr.', 'Quarterly Sales Variation %',
-        'Issue Price (Rs)', 'ROCE %'
-    ]
-    
-    # Filter numeric features that exist in the dataframe
-    existing_numeric_features = [col for col in numeric_features if col in df.columns]
-    original_df_numeric = df[existing_numeric_features].copy()
-    
-    # Ensure all columns are numeric
-    for col in original_df_numeric.columns:
-        original_df_numeric[col] = pd.to_numeric(original_df_numeric[col], errors='coerce')
-    
-    # Fill NaN values
-    original_df_numeric = original_df_numeric.fillna(0)
-    
-    # Calculate correlation matrix for original features
-    if not original_df_numeric.empty:
-        original_corr = original_df_numeric.corr()
-        
-        # Plot original features correlation heatmap
-        fig, ax = plt.subplots(figsize=(12, 10))
-        mask = np.triu(np.ones_like(original_corr, dtype=bool))
-        sns.heatmap(original_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                    square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-        plt.title("Correlation Matrix - Original Features", fontsize=16, fontweight='bold')
-        plt.xticks(rotation=45, ha='right')
-        plt.yticks(rotation=0)
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric data available for original features correlation heatmap.")
-    
-    # Engineered features correlation
-    st.subheader("🔧 Engineered Features Correlation Heatmap")
-    
-    # Ensure engineered features are all numeric
-    X_engineered_numeric = X_engineered.copy()
-    for col in X_engineered_numeric.columns:
-        X_engineered_numeric[col] = pd.to_numeric(X_engineered_numeric[col], errors='coerce')
-    
-    # Fill NaN values
-    X_engineered_numeric = X_engineered_numeric.fillna(0)
-    
-    # Calculate correlation matrix for engineered features
-    if not X_engineered_numeric.empty:
-        engineered_corr = X_engineered_numeric.corr()
-        
-        # Plot engineered features correlation heatmap
-        fig, ax = plt.subplots(figsize=(16, 14))
-        mask = np.triu(np.ones_like(engineered_corr, dtype=bool))
-        sns.heatmap(engineered_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                    square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-        plt.title("Correlation Matrix - Engineered Features", fontsize=16, fontweight='bold')
-        plt.xticks(rotation=45, ha='right')
-        plt.yticks(rotation=0)
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric data available for engineered features correlation heatmap.")
-    
-    # Correlation insights
-    st.subheader("📈 Correlation Insights")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.write("**Original Features:**")
-        st.write("- Shows relationships between basic financial metrics")
-        st.write("- Helps identify multicollinearity in raw data")
-        st.write("- Useful for understanding fundamental relationships")
-    
-    with col2:
-        st.write("**Engineered Features:**")
-        st.write("- Reveals complex interactions between derived features")
-        st.write("- Highlights domain-specific financial relationships")
-        st.write("- Guides feature selection for model training")
-    """Display correlation heatmaps for original and engineered features"""
-    
-    st.header("🔥 Correlation Analysis")
-    
-    # Original features correlation
-    st.subheader("📊 Original Features Correlation Heatmap")
-    
-    # Select only original features from the dataframe
-    original_features = [
-        'P/E', 'Mar Capitalization Rs.Cr.', 'Dividend Yield %',
-        'Net Profit of last quarter Rs. Cr.', 'Quarterly Profit Variation %',
-        'Quarterly Sales Rs.Cr.', 'Quarterly Sales Variation %',
-        'Issue Price (Rs)', 'ROCE %', 'Classification'
-    ]
-    
-    # Filter original features that exist in the dataframe
-    existing_original_features = [col for col in original_features if col in df.columns]
-    original_df = df[existing_original_features].copy()
-    
-    # Handle Classification column - ensure it's properly formatted
-    if 'Classification' in original_df.columns:
-        # Convert to string and strip whitespace
-        original_df['Classification'] = original_df['Classification'].apply(
-            lambda x: str(x).strip() if pd.notna(x) else 'Unknown'
-        )
-        
-        # Create a more robust encoding without LabelEncoder
-        unique_classes = original_df['Classification'].unique()
-        class_mapping = {cls: i for i, cls in enumerate(unique_classes)}
-        original_df['Classification_encoded'] = original_df['Classification'].map(class_mapping)
-        
-        original_df_numeric = original_df.drop('Classification', axis=1)
-    else:
-        original_df_numeric = original_df
-    
-    # Ensure all columns are numeric and handle any non-numeric values
-    for col in original_df_numeric.columns:
-        original_df_numeric[col] = pd.to_numeric(original_df_numeric[col], errors='coerce')
-    
-    # Drop any remaining non-numeric columns and handle NaN values
-    original_df_numeric = original_df_numeric.select_dtypes(include=[np.number])
-    original_df_numeric = original_df_numeric.fillna(0)
-    
-    # Calculate correlation matrix for original features
-    original_corr = original_df_numeric.corr()
-    
-    # Plot original features correlation heatmap
-    if not original_corr.empty:
-        fig, ax = plt.subplots(figsize=(12, 10))
-        mask = np.triu(np.ones_like(original_corr, dtype=bool))
-        sns.heatmap(original_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                    square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-        plt.title("Correlation Matrix - Original Features", fontsize=16, fontweight='bold')
-        plt.xticks(rotation=45, ha='right')
-        plt.yticks(rotation=0)
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric data available for original features correlation heatmap.")
-    
-    # Engineered features correlation
-    st.subheader("🔧 Engineered Features Correlation Heatmap")
-    
-    # Ensure engineered features are all numeric
-    X_engineered_numeric = X_engineered.copy()
-    for col in X_engineered_numeric.columns:
-        X_engineered_numeric[col] = pd.to_numeric(X_engineered_numeric[col], errors='coerce')
-    
-    # Drop any remaining non-numeric columns and handle NaN values
-    X_engineered_numeric = X_engineered_numeric.select_dtypes(include=[np.number])
-    X_engineered_numeric = X_engineered_numeric.fillna(0)
-    
-    # Calculate correlation matrix for engineered features
-    engineered_corr = X_engineered_numeric.corr()
-    
-    # Plot engineered features correlation heatmap
-    if not engineered_corr.empty:
-        fig, ax = plt.subplots(figsize=(16, 14))
-        mask = np.triu(np.ones_like(engineered_corr, dtype=bool))
-        sns.heatmap(engineered_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                    square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-        plt.title("Correlation Matrix - Engineered Features", fontsize=16, fontweight='bold')
-        plt.xticks(rotation=45, ha='right')
-        plt.yticks(rotation=0)
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric data available for engineered features correlation heatmap.")
-    
-    # Correlation insights
-    st.subheader("📈 Correlation Insights")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.write("**Original Features:**")
-        st.write("- Shows relationships between basic financial metrics")
-        st.write("- Helps identify multicollinearity in raw data")
-        st.write("- Useful for understanding fundamental relationships")
-    
-    with col2:
-        st.write("**Engineered Features:**")
-        st.write("- Reveals complex interactions between derived features")
-        st.write("- Highlights domain-specific financial relationships")
-        st.write("- Guides feature selection for model training")
-    """Display correlation heatmaps for original and engineered features"""
-    
-    st.header("🔥 Correlation Analysis")
-    
-    # Original features correlation
-    st.subheader("📊 Original Features Correlation Heatmap")
-    
-    # Select only original features from the dataframe
-    original_features = [
-        'P/E', 'Mar Capitalization Rs.Cr.', 'Dividend Yield %',
-        'Net Profit of last quarter Rs. Cr.', 'Quarterly Profit Variation %',
-        'Quarterly Sales Rs.Cr.', 'Quarterly Sales Variation %',
-        'Issue Price (Rs)', 'ROCE %', 'Classification'
-    ]
-    
-    # Filter original features that exist in the dataframe
-    existing_original_features = [col for col in original_features if col in df.columns]
-    original_df = df[existing_original_features].copy()
-    
-    # Convert Classification to string and then to numeric for correlation
-    if 'Classification' in original_df.columns:
-        # Convert to string first to handle mixed types
-        original_df['Classification'] = original_df['Classification'].astype(str)
-        le = LabelEncoder()
-        original_df['Classification_encoded'] = le.fit_transform(original_df['Classification'])
-        original_df_numeric = original_df.drop('Classification', axis=1)
-    else:
-        original_df_numeric = original_df
-    
-    # Ensure all columns are numeric
-    for col in original_df_numeric.columns:
-        original_df_numeric[col] = pd.to_numeric(original_df_numeric[col], errors='coerce')
-    
-    # Drop any remaining non-numeric columns
-    original_df_numeric = original_df_numeric.select_dtypes(include=[np.number])
-    
-    # Calculate correlation matrix for original features
-    original_corr = original_df_numeric.corr()
-    
-    # Plot original features correlation heatmap
-    fig, ax = plt.subplots(figsize=(12, 10))
-    mask = np.triu(np.ones_like(original_corr, dtype=bool))
-    sns.heatmap(original_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-    plt.title("Correlation Matrix - Original Features", fontsize=16, fontweight='bold')
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
-    st.pyplot(fig)
-    
-    # Engineered features correlation
-    st.subheader("🔧 Engineered Features Correlation Heatmap")
-    
-    # Ensure engineered features are all numeric
-    X_engineered_numeric = X_engineered.copy()
-    for col in X_engineered_numeric.columns:
-        X_engineered_numeric[col] = pd.to_numeric(X_engineered_numeric[col], errors='coerce')
-    
-    # Drop any remaining non-numeric columns
-    X_engineered_numeric = X_engineered_numeric.select_dtypes(include=[np.number])
-    
-    # Calculate correlation matrix for engineered features
-    engineered_corr = X_engineered_numeric.corr()
-    
-    # Plot engineered features correlation heatmap
-    fig, ax = plt.subplots(figsize=(16, 14))
-    mask = np.triu(np.ones_like(engineered_corr, dtype=bool))
-    sns.heatmap(engineered_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-    plt.title("Correlation Matrix - Engineered Features", fontsize=16, fontweight='bold')
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
-    st.pyplot(fig)
-    
-    # Correlation insights
-    st.subheader("📈 Correlation Insights")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.write("**Original Features:**")
-        st.write("- Shows relationships between basic financial metrics")
-        st.write("- Helps identify multicollinearity in raw data")
-        st.write("- Useful for understanding fundamental relationships")
-    
-    with col2:
-        st.write("**Engineered Features:**")
-        st.write("- Reveals complex interactions between derived features")
-        st.write("- Highlights domain-specific financial relationships")
-        st.write("- Guides feature selection for model training")
-    """Display correlation heatmaps for original and engineered features"""
-    
-    st.header("🔥 Correlation Analysis")
-    
-    # Original features correlation
-    st.subheader("📊 Original Features Correlation Heatmap")
-    
-    # Select only original features from the dataframe
-    original_features = [
-        'P/E', 'Mar Capitalization Rs.Cr.', 'Dividend Yield %',
-        'Net Profit of last quarter Rs. Cr.', 'Quarterly Profit Variation %',
-        'Quarterly Sales Rs.Cr.', 'Quarterly Sales Variation %',
-        'Issue Price (Rs)', 'ROCE %', 'Classification'
-    ]
-    
-    # Filter original features that exist in the dataframe
-    existing_original_features = [col for col in original_features if col in df.columns]
-    original_df = df[existing_original_features].copy()
-    
-    # Convert Classification to numeric for correlation
-    if 'Classification' in original_df.columns:
-        le = LabelEncoder()
-        original_df['Classification_encoded'] = le.fit_transform(original_df['Classification'])
-        original_df_numeric = original_df.drop('Classification', axis=1)
-    else:
-        original_df_numeric = original_df
-    
-    # Calculate correlation matrix for original features
-    original_corr = original_df_numeric.corr()
-    
-    # Plot original features correlation heatmap
-    fig, ax = plt.subplots(figsize=(12, 10))
-    mask = np.triu(np.ones_like(original_corr, dtype=bool))
-    sns.heatmap(original_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-    plt.title("Correlation Matrix - Original Features", fontsize=16, fontweight='bold')
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
-    st.pyplot(fig)
-    
-    # Engineered features correlation
-    st.subheader("🔧 Engineered Features Correlation Heatmap")
-    
-    # Calculate correlation matrix for engineered features
-    engineered_corr = X_engineered.corr()
-    
-    # Plot engineered features correlation heatmap
-    fig, ax = plt.subplots(figsize=(16, 14))
-    mask = np.triu(np.ones_like(engineered_corr, dtype=bool))
-    sns.heatmap(engineered_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu", center=0,
-                square=True, linewidths=0.5, cbar_kws={"shrink": 0.8})
-    plt.title("Correlation Matrix - Engineered Features", fontsize=16, fontweight='bold')
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
-    st.pyplot(fig)
-    
-    # Correlation insights
-    st.subheader("📈 Correlation Insights")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.write("**Original Features:**")
-        st.write("- Shows relationships between basic financial metrics")
-        st.write("- Helps identify multicollinearity in raw data")
-        st.write("- Useful for understanding fundamental relationships")
-    
-    with col2:
-        st.write("**Engineered Features:**")
-        st.write("- Reveals complex interactions between derived features")
-        st.write("- Highlights domain-specific financial relationships")
-        st.write("- Guides feature selection for model training")
+
 
 def display_model_performance(individual_performance, y_test_original):
     """Display comprehensive model performance summary"""
@@ -1108,7 +764,7 @@ def show_model_training():
     
     if st.button("🚀 Train Advanced Ensemble Model"):
         with st.spinner("Loading and preprocessing data..."):
-            df = load_and_preprocess_data()
+            df = pd.read_csv(DATASET_PATH)
             
         if df is not None:
             with st.spinner("Performing advanced feature engineering..."):
@@ -1118,18 +774,24 @@ def show_model_training():
                 model, scaler, selector, X_train, X_test, y_train, y_test, selected_features, individual_performance, label_encoder = train_advanced_model(X, y_encoded, label_encoder)
                 
                 # Save models and encoders
-                with open('models/advanced_ensemble_model.pkl', 'wb') as f:
+                with open(os.path.join(MODELS_DIR, 'advanced_ensemble_model.pkl'), 'wb') as f:
                     pickle.dump(model, f)
-                with open('models/advanced_scaler.pkl', 'wb') as f:
+
+                with open(os.path.join(MODELS_DIR, 'advanced_scaler.pkl'), 'wb') as f:
                     pickle.dump(scaler, f)
-                with open('models/advanced_selector.pkl', 'wb') as f:
+
+                with open(os.path.join(MODELS_DIR, 'advanced_selector.pkl'), 'wb') as f:
                     pickle.dump(selector, f)
-                with open('models/selected_features.pkl', 'wb') as f:
+
+                with open(os.path.join(MODELS_DIR, 'selected_features.pkl'), 'wb') as f:
                     pickle.dump(selected_features, f)
-                with open('models/model_performance.pkl', 'wb') as f:
+
+                with open(os.path.join(MODELS_DIR, 'model_performance.pkl'), 'wb') as f:
                     pickle.dump(individual_performance, f)
-                with open('models/label_encoder.pkl', 'wb') as f:
+
+                with open(os.path.join(MODELS_DIR, 'label_encoder.pkl'), 'wb') as f:
                     pickle.dump(label_encoder, f)
+
                 
                 st.session_state.model_trained = True
                 st.session_state.model_performance = individual_performance
@@ -1140,16 +802,22 @@ def show_ipo_prediction():
     
     # Load trained models and encoders
     try:
-        with open('models/advanced_ensemble_model.pkl', 'rb') as f:
+
+        with open(os.path.join(MODELS_DIR, 'advanced_ensemble_model.pkl'), 'rb') as f:
             model = pickle.load(f)
-        with open('models/advanced_scaler.pkl', 'rb') as f:
+
+        with open(os.path.join(MODELS_DIR, 'advanced_scaler.pkl'), 'rb') as f:
             scaler = pickle.load(f)
-        with open('models/advanced_selector.pkl', 'rb') as f:
+
+        with open(os.path.join(MODELS_DIR, 'advanced_selector.pkl'), 'rb') as f:
             selector = pickle.load(f)
-        with open('models/selected_features.pkl', 'rb') as f:
+
+        with open(os.path.join(MODELS_DIR, 'selected_features.pkl'), 'rb') as f:
             selected_features = pickle.load(f)
-        with open('models/label_encoder.pkl', 'rb') as f:
+
+        with open(os.path.join(MODELS_DIR, 'label_encoder.pkl'), 'rb') as f:
             label_encoder = pickle.load(f)
+
     except FileNotFoundError:
         st.error("❌ Models not found. Please train the model first.")
         return
@@ -1362,7 +1030,7 @@ def show_data_analysis():
     """Display data analysis including correlation heatmaps"""
     st.header("📈 Data Analysis & Feature Correlation")
     
-    df = load_and_preprocess_data()
+    df = pd.read_csv(DATASET_PATH)
     if df is not None:
         with st.spinner("Performing feature engineering for correlation analysis..."):
             X_engineered, _, _, _ = advanced_feature_engineering(df)
