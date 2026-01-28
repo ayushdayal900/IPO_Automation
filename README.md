@@ -7,7 +7,7 @@ sdk: streamlit
 sdk_version: 1.39.0
 app_file: streamlit_app.py
 pinned: false
-python_version: 3.10
+python_version: 3.9
 ---
 
 
