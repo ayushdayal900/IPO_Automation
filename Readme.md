@@ -1,3 +1,17 @@
+---
+title: IPO Success Predictor
+emoji: 📈
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+sdk_version: 1.39.0
+app_file: streamlit_app.py
+pinned: false
+python_version: 3.10
+---
+
+
+
 # Advanced IPO Success Predictor Report
 
 This report describes the implementation of an **Advanced IPO Success Predictor** using machine learning with an emphasis on sophisticated feature engineering, ensemble modeling, and a dynamic prediction system integrated into a Streamlit web application.
